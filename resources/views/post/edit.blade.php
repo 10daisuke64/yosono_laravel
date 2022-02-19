@@ -12,7 +12,7 @@
       <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
         <div class="p-6 bg-white border-b border-gray-200">
           @include('common.errors')
-          <form class="mb-6" action="{{ route('post.update',$post->id) }}" method="POST">
+          <form class="mb-6" action="{{ route('post.update',$post->id) }}" method="POST" enctype="multipart/form-data">
             @method('put')
             @csrf
             <div class="flex flex-col mb-4">
@@ -27,6 +27,15 @@
                 </li>
               @endforeach
               </ul>
+            </div>
+            <div class="flex flex-col mb-4">
+              <label class="mb-2 uppercase font-bold text-lg text-grey-darkest" for="main_image">Main Image</label>
+              @if ($post->main_image !== null)
+                <img src="{{ \Storage::url($post->main_image) }}" class='w-100 mb-3'>
+              @else
+                <img src="{{ \Storage::url('no_image.png') }}" class='w-100 mb-3'>
+              @endif
+              <input class="border py-2 px-3 text-grey-darkest" type="file" name="main_image" id="main_image">
             </div>
             <div class="flex flex-col mb-4">
               <label class="mb-2 uppercase font-bold text-lg text-grey-darkest" for="title">Title</label>

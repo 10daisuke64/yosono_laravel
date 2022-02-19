@@ -59,7 +59,7 @@
                       <input class="border py-2 px-3 text-grey-darkest" type="search" placeholder="keyword" name="search" value="@if (isset($search)) {{ $search }} @endif">
                     </div>
                     <div class="d-flex justify-content-center">
-                      <button type="submit" class="w-full py-3 mt-6 font-medium tracking-widest text-white uppercase bg-black shadow-lg focus:outline-none hover:bg-gray-900 hover:shadow-none">検索</button>
+                      <button type="submit" class="w-full py-3 font-medium tracking-widest text-white uppercase bg-black shadow-lg focus:outline-none hover:bg-gray-900 hover:shadow-none">検索</button>
                     </div>
                   </form>
                 </td>
@@ -78,7 +78,7 @@
           <table class="text-center w-full border-collapse">
             <thead>
               <tr>
-                <th class="py-4 px-6 bg-grey-lightest font-bold uppercase text-lg text-grey-dark border-b border-grey-light">post category: {{ $category->name }}</th>
+                <th class="py-4 px-6 bg-grey-lightest font-bold text-lg text-grey-dark border-b border-grey-light">「{{ $search }}」の検索結果</th>
               </tr>
             </thead>
             <tbody>
@@ -89,7 +89,7 @@
                     <a href="{{ route('post.show',$post->id) }}">
                       <ul class="flex">
                       @foreach ($post->categories as $category)
-                        <li class="mr-2 ml-2 text-sm">{{$category['name']}}</li>
+                        <li class="mr-2 ml-2 text-sm">{{$category->name}}</li>
                       @endforeach
                       </ul>
                       <p class="text-left text-grey-dark">{{$post->user->name}}</p>
@@ -154,7 +154,7 @@
               @else
                 <tr class="hover:bg-grey-lighter">
                   <td class="py-4 px-6 border-b border-grey-light">
-                    <h3 class="text-left font-bold text-lg text-grey-dark">You have no post.</h3>
+                    <h3 class="text-left font-bold text-lg text-grey-dark">投稿は見つかりませんでした</h3>
                   </td>
                 </tr>
               @endif

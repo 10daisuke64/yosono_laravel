@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\PostController;
 use App\Http\Controllers\FavoriteController;
 use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\CommentController;
 
 /*
 |--------------------------------------------------------------------------
@@ -18,9 +19,12 @@ use App\Http\Controllers\CategoryController;
 
 Route::group(['middleware' => 'auth'], function () {
     Route::get('/post/category/{category}', [CategoryController::class, 'index'])->name('categories');
+    Route::get('/post/ranking', [PostController::class, 'ranking'])->name('post.ranking');
+    Route::get('/post/search', [PostController::class, 'search'])->name('post.search');
     
     Route::post('post/{post}/favorites', [FavoriteController::class, 'store'])->name('favorites');
     Route::post('post/{post}/unfavorites', [FavoriteController::class, 'destroy'])->name('unfavorites');
+    Route::post('post/{post}/comments', [CommentController::class, 'store'])->name('comments');
   
     Route::get('/post/mypage', [PostController::class, 'mydata'])->name('post.mypage');
     Route::resource('post', PostController::class);

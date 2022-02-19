@@ -20,8 +20,11 @@ class PostController extends Controller
     public function index()
     {
         $posts = Post::getAllOrderByCreated_at();
+        
+        $categories = Category::getAll();
         return view('post.index', [
-            'posts' => $posts
+            'posts' => $posts,
+            'categories' => $categories,
         ]);
     }
 
@@ -80,10 +83,10 @@ class PostController extends Controller
             );
             \Storage::put($path, (string) $image->encode());
             $path = explode('/', $path);
+            $data['main_image'] = $path[1];
         }else{
             $path = null;
         }
-        $data['main_image'] = $path[1];
         
         //dd($data);
         
@@ -130,10 +133,14 @@ class PostController extends Controller
      */
     public function update(Request $request, $id)
     {
+        $post = Post::find($id);
+        
         //バリデーション
         $validator = Validator::make($request->all(), [
-            'title' => 'required | max:191',
+            'main_image'=>'image',
+            'title' => 'required | max:30',
             'body' => 'required',
+            'category_ids' => 'required',
         ]);
         //バリデーション:エラー
         if ($validator->fails()) {
@@ -142,10 +149,42 @@ class PostController extends Controller
             ->withInput()
             ->withErrors($validator);
         }
+        
+        // 画像のアップロード
+        $now_path = $post->main_image;
+        if($request->hasFile('main_image')){
+            // 画像のリサイズ
+            $file = $request->file('main_image');
+            $path = $file->hashName('public');
+            $image = \Image::make($file);
+            $image->orientate();
+            $image->resize(1280, null,
+                function ($constraint) {
+                    // 縦横比を保持
+                    $constraint->aspectRatio();
+                    // 小さい画像は大きくしない
+                    $constraint->upsize();
+                }
+            );
+            \Storage::put($path, (string) $image->encode());
+            \Storage::disk('public')->delete($now_path);
+            
+            $path = explode('/', $path);
+            $path = $path[1];
+        } else {
+            $path = $now_path;
+        }
+        
+        //dd($path);
+        
         //データ更新処理
-        $result = Post::find($id);
-        $result->update($request->all());
-        $result->categories()->sync($request->get('category_ids', []));
+        $post->update([
+            'title' => $request->title,
+            'body' => $request->body,
+            'main_image' => $path,
+        ]);
+        
+        $post->categories()->sync($request->get('category_ids', []));
         return redirect()->route('post.index');
     }
 
@@ -165,8 +204,40 @@ class PostController extends Controller
     {
         // Userモデルに定義した関数を実行する．
         $posts = User::find(Auth::user()->id)->myposts;
-        return view('post.index', [
+        return view('post.mypage', [
             'posts' => $posts
+        ]);
+    }
+    
+    public function ranking()
+    {
+        $posts = Post::ranking();
+        return view('post.ranking', [
+            'posts' => $posts,
+        ]);
+    }
+    
+    public function search(Request $request)
+    {
+        $posts = Post::getAllOrderByCreated_at();
+        $search = $request->input('search');
+        
+        $query = Post::query();
+
+        if ($search !== null) {
+            $spaceConversion = mb_convert_kana($search, 's');
+            $wordArraySearched = preg_split('/[\s,]+/', $spaceConversion, -1, PREG_SPLIT_NO_EMPTY);
+            foreach($wordArraySearched as $value) {
+                $query->where('title', 'like', '%'.$value.'%')->orWhere('body', 'like', '%'.$value.'%');
+            }
+            $posts = $query->paginate();
+        }
+        
+        $categories = Category::getAll();
+        return view('post.search', [
+            'posts' => $posts,
+            'categories' => $categories,
+            'search' => $search,
         ]);
     }
 }

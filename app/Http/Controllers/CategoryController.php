@@ -17,12 +17,14 @@ class CategoryController extends Controller
             $query->where('category_post.category_id', $id);
         });
         $posts = $query->orderBy('created_at', 'desc')->get();
-        
+
         $category = Category::find($id);
+        $categories = Category::getAll();
         
         return view('post.category', [
             'posts' => $posts,
             'category' => $category,
+            'categories' => $categories,
         ]);
     }
 }

@@ -14,7 +14,11 @@
           <div class="mb-6">
             <div class="flex flex-col mb-4">
               <p class="mb-2 uppercase font-bold text-lg text-grey-darkest">Main Image</p>
-              <img src="{{ '/storage/' . $post['main_image']}}" class='w-100'/>
+              @if ($post->main_image !== null)
+                <img src="{{ \Storage::url($post->main_image) }}" class='w-100 mb-3'>
+              @else
+                <img src="{{ \Storage::url('no_image.png') }}" class='w-100 mb-3'>
+              @endif
             </div>
             
             <div class="flex flex-col mb-4">
