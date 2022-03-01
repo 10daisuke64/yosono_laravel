@@ -3,7 +3,7 @@
 <x-app-layout>
   <x-slot name="header">
     <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-      {{ __('Post Index') }}
+      {{ __('Profile') }}
     </h2>
   </x-slot>
   
@@ -14,54 +14,18 @@
           <table class="text-center w-full border-collapse">
             <thead>
               <tr>
-                <th class="py-4 px-6 bg-grey-lightest font-bold uppercase text-lg text-grey-dark border-b border-grey-light">sort by category</th>
+                <th class="py-4 px-6 bg-grey-lightest font-bold uppercase text-lg text-grey-dark border-b border-grey-light">Profile</th>
               </tr>
             </thead>
             <tbody>
               <tr class="hover:bg-grey-lighter">
                 <td class="py-4 px-6 border-b border-grey-light">
-                  <ul class="flex">
-                    <li class="mr-2 ml-2 text-sm">
-                      <a href="{{ route('post.index') }}">すべて</a>
-                    </li>
-                    @foreach ($categories as $categories_val)
-                      <li class="mr-2 ml-2 text-sm">
-                        <a href="{{ route('categories',$categories_val->id) }}">{{$categories_val->name}}</a>
-                      </li>
-                    @endforeach
-                    </ul>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-  </div>
-  
-  <div class="py-12 pb-1">
-    <div class="max-w-7xl mx-auto sm:w-8/12 md:w-1/2 lg:w-5/12">
-      <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-        <div class="p-6 bg-white border-b border-gray-200">
-          <table class="text-center w-full border-collapse">
-            <thead>
-              <tr>
-                <th class="py-4 px-6 bg-grey-lightest font-bold uppercase text-lg text-grey-dark border-b border-grey-light">keyword search</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr class="hover:bg-grey-lighter">
-                <td class="py-4 px-6 border-b border-grey-light">
-                  @include('common.errors')
-                  <form action="{{ route('post.search') }}" method="GET">
-                    @csrf
-                    <div class="flex flex-col mb-4">
-                      <input class="border py-2 px-3 text-grey-darkest" type="search" placeholder="keyword" name="search" value="@if (isset($search)) {{ $search }} @endif">
-                    </div>
-                    <div class="d-flex justify-content-center">
-                      <button type="submit" class="w-full py-3 font-medium tracking-widest text-white uppercase bg-black shadow-lg focus:outline-none hover:bg-gray-900 hover:shadow-none">検索</button>
-                    </div>
-                  </form>
+                  <div class="flex items-center flex-col">
+                    <img src="{{ \Storage::url('profiles/'.$user->profile_image) }}" width="100" height="100">
+                    <h3 class="mt-4 font-bold text-lg text-grey-dark">{{$user->name}}</h3>
+                    <p class="mt-4">{{ $user->profile_name }}</p>
+                    <p class="mt-4">{{ $user->profile_text }}</p>
+                  </div>
                 </td>
               </tr>
             </tbody>
@@ -147,35 +111,14 @@
                         </button>
                       </form>
                       @endif
-                      
-                      <!-- コメント -->
-                      <form action="{{ route('comments',$post->id) }}" method="POST" class="text-left">
-                        @csrf
-                        <div class="flex">
-                          <input class="border py-2 px-3 text-grey-darkest" type="text" placeholder="コメント" name="comment">
-                          <button type="submit" class="py-3 px-3 tracking-widest text-white bg-black shadow-lg focus:outline-none hover:bg-gray-900 hover:shadow-none">送信</button>
-                        </div>
-                      </form>
                     </div>
-                    
-                    @if(!$post->comments->isEmpty())
-                    <div class="mt-6 text-left">
-                      <p>コメント</p>
-                      <ul>
-                      @foreach ($post->comments as $val)
-                        <li class="text-sm">{{ $val->user->name }}：{{$val->comment}}</li>
-                      @endforeach
-                      </ul>
-                    </div>
-                    @endif
-                    
                   </td>
                 </tr>
                 @endforeach
               @else
                 <tr class="hover:bg-grey-lighter">
                   <td class="py-4 px-6 border-b border-grey-light">
-                    <h3 class="text-left font-bold text-lg text-grey-dark">You have no post.</h3>
+                    <h3 class="text-left font-bold text-lg text-grey-dark">No post.</h3>
                   </td>
                 </tr>
               @endif

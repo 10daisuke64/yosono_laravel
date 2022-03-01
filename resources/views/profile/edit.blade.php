@@ -1,16 +1,17 @@
-<!-- resources/views/tweet/create.blade.php -->
+<!-- resources/views/tweet/index.blade.php -->
 
 <x-app-layout>
   <x-slot name="header">
     <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-      {{ __('Create New Post') }}
+      {{ __('Profile') }}
     </h2>
   </x-slot>
-
-  <div class="py-12">
+  
+  <div class="py-12 pb-1">
     <div class="max-w-7xl mx-auto sm:w-8/12 md:w-1/2 lg:w-5/12">
       <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
         <div class="p-6 bg-white border-b border-gray-200">
+          
           @include('common.errors')
           
           <!-- modal -->
@@ -24,47 +25,43 @@
             </div>
           </div>
           <!-- //modal -->
-        
-          <form class="mb-6" action="{{ route('post.store') }}" method="POST">
+          
+          <form class="mb-6" action="{{ route('profile.update',$user->id) }}" method="POST">
             @csrf
             <div class="flex flex-col mb-4">
-              <p class="mb-2 uppercase font-bold text-lg text-grey-darkest">Category</p>
-              <ul class="flex">
-              @foreach ($categories as $category)
-                <li class="mr-2 ml-2">
-                  <label class="flex text-sm">
-                    <input class="border text-grey-darkest" type="checkbox" name="category_ids[]" value="{{ $category['id'] }}">
-                    <span>{{ $category['name'] }}</span>
-                  </label>
-                </li>
-              @endforeach
-              </ul>
-            </div>
-            
-            <div class="flex flex-col mb-4">
-              <label class="mb-2 uppercase font-bold text-lg text-grey-darkest" for="main_image">Main Image</label>
-              <div class="thumbnail" data-target="main"></div>
-              <input type="file" name="image" class="input-image" data-target="main" readonly="readonly">
-              <input type="text" name="main_image" hidden>
-            </div>
-            
-            <div class="flex flex-col mb-4">
-              <label class="mb-2 uppercase font-bold text-lg text-grey-darkest" for="title">Title</label>
-              <input class="border py-2 px-3 text-grey-darkest" type="text" name="title" id="title" maxlength="30">
+              <label class="mb-2 uppercase font-bold text-lg text-grey-darkest" for="profile_image">Profile Image</label>
+              <div class="thumbnail" data-target="profile">
+                @if ($user->profile_image !== null)
+                  <img src="{{ \Storage::url('profiles/'.$user->profile_image) }}" width="100" height="100">
+                @else
+                  <img src="{{ \Storage::url('profiles/default.png') }}" width="100" height="100">
+                @endif
+              </div>
+              <input type="file" name="image" class="input-image" data-target="profile" readonly="readonly">
+              <input type="text" name="profile_image" value="{{ $user->profile_image }}" hidden>
             </div>
             <div class="flex flex-col mb-4">
-              <label class="mb-2 uppercase font-bold text-lg text-grey-darkest" for="body">Content</label>
-              <textarea class="border py-2 px-3 text-grey-darkest" name="body" id="body"></textarea>
+              <label class="mb-2 uppercase font-bold text-lg text-grey-darkest" for="profile_name">profile_name</label>
+              <input class="border py-2 px-3 text-grey-darkest" type="text" name="profile_name" id="profile_name" value="{{$user->profile_name}}">
             </div>
-            <button type="submit" class="w-full py-3 mt-6 font-medium tracking-widest text-white uppercase bg-black shadow-lg focus:outline-none hover:bg-gray-900 hover:shadow-none">
-              Create
-            </button>
+            <div class="flex flex-col mb-4">
+              <label class="mb-2 uppercase font-bold text-lg text-grey-darkest" for="profile_text">profile_text</label>
+              <textarea class="border py-2 px-3 text-grey-darkest" name="profile_text" id="profile_text">{{$user->profile_text}}</textarea>
+            </div>
+            <div class="flex justify-evenly">
+              <a href="{{ route('post.mypage') }}" class="block text-center w-5/12 py-3 mt-6 font-medium tracking-widest text-black uppercase bg-gray-100 shadow-sm focus:outline-none hover:bg-gray-200 hover:shadow-none">
+                Back
+              </a>
+              <button type="submit" class="w-5/12 py-3 mt-6 font-medium tracking-widest text-white uppercase bg-black shadow-lg focus:outline-none hover:bg-gray-900 hover:shadow-none">
+                Update
+              </button>
+            </div>
           </form>
         </div>
       </div>
     </div>
   </div>
-<script>
+  <script>
   var $modal = $('#js-modal');
   var image = document.getElementById('js-modal__image');
   var cropper;
@@ -77,8 +74,8 @@
       image.src = url;
       $modal.fadeIn(200, function() {
         cropper = new Cropper(image, {
-          aspectRatio: 4 / 3,
-          viewMode: 1
+          aspectRatio: 1,
+          viewMode: 1,
         });
       });
     };
@@ -118,8 +115,8 @@
     var target_file = `input[name="${target}_image"]`;
 
     canvas = cropper.getCroppedCanvas({
-      width: 560,
-      height: 420,
+      width: 100,
+      height: 100,
     });
     canvas.toBlob(function(blob) {
       url = URL.createObjectURL(blob);
@@ -132,7 +129,7 @@
           headers: { 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content') },
           type: "POST",
           dataType: "json",
-          url: "{{ route('post.upload') }}",
+          url: "{{ route('profile.upload') }}",
           data: base64data,
           cache: false,
           contentType: false,
@@ -140,7 +137,7 @@
         }).done(function(response) {
           $(target_file).val(response['src']);
           let thumbnail = `
-            <img src="/storage/${response['src']}">
+            <img src="/storage/profiles/${response['src']}">
           `;
           $(target_thumbnail).html(thumbnail);
         }).fail(function(response) {

@@ -22,13 +22,13 @@
                 @foreach ($posts as $post)
                 <tr class="hover:bg-grey-lighter">
                   <td class="py-4 px-6 border-b border-grey-light">
+                    <a href="{{ route('profile.show',$post->user->id) }}">{{$post->user->name}}</a>
                     <a href="{{ route('post.show',$post->id) }}">
                       <ul class="flex">
                       @foreach ($post->categories as $category)
                         <li class="mr-2 ml-2 text-sm">{{$category->name}}</li>
                       @endforeach
                       </ul>
-                      <p class="text-left text-grey-dark">{{$post->user->name}}</p>
                       @if ($post->main_image !== null)
                         <img src="{{ \Storage::url($post->main_image) }}" class='w-100 mb-3'>
                       @else

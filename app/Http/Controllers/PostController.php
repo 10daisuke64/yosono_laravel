@@ -3,12 +3,12 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Validator;
 use App\Models\Post;
 use App\Models\User;
 use App\Models\Category;
 use Auth;
-use Image;
 
 class PostController extends Controller
 {
@@ -40,6 +40,18 @@ class PostController extends Controller
             'categories' => $categories
         ]);
     }
+    
+    public function upload(Request $request)
+    {
+        $image_base64 = explode(";base64,", $request);
+        
+        $image = base64_decode($image_base64[1]); // 画像データとして取り出す
+        $path = uniqid() . '.png'; // 保存に使うファイル名
+        $save_path = 'public/'.$path;
+        
+        Storage::put($save_path, $image);
+        return response()->json(['src'=>$path]); // JSONでレスポンスを返す
+    }
 
     /**
      * Store a newly created resource in storage.
@@ -51,7 +63,7 @@ class PostController extends Controller
     {
         // バリデーション
         $validator = Validator::make($request->all(), [
-            'main_image'=>'image',
+            'main_image'=>'required',
             'title' => 'required | max:30',
             'body' => 'required',
             'category_ids' => 'required',
@@ -65,31 +77,6 @@ class PostController extends Controller
         }
         $data = $request->merge(['user_id' => Auth::user()->id])->all();
         
-        // 画像のアップロード
-        if($request->hasFile('main_image')){
-            // 画像のリサイズ
-            $file = $request->file('main_image');
-            $path = $file->hashName('public');
-
-            $image = \Image::make($file);
-            $image->orientate();
-            $image->resize(1280, null,
-                function ($constraint) {
-                    // 縦横比を保持
-                    $constraint->aspectRatio();
-                    // 小さい画像は大きくしない
-                    $constraint->upsize();
-                }
-            );
-            \Storage::put($path, (string) $image->encode());
-            $path = explode('/', $path);
-            $data['main_image'] = $path[1];
-        }else{
-            $path = null;
-        }
-        
-        //dd($data);
-        
         $result = Post::create($data);
         //dd($result);
         $result->categories()->sync($request->get('category_ids', []));
@@ -102,9 +89,8 @@ class PostController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function show($id)
+    public function show(User $user, Post $post)
     {
-        $post = Post::find($id);
         return view('post.show', ['post' => $post]);
     }
 
@@ -114,10 +100,9 @@ class PostController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function edit($id)
+    public function edit(User $user, Post $post)
     {
         $categories = Category::getAll();
-        $post = Post::find($id);
         return view('post.edit', [
             'post' => $post,
             'categories' => $categories,
@@ -131,13 +116,11 @@ class PostController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, $id)
+    public function update(Request $request, User $user, Post $post)
     {
-        $post = Post::find($id);
-        
         //バリデーション
         $validator = Validator::make($request->all(), [
-            'main_image'=>'image',
+            'main_image'=>'required',
             'title' => 'required | max:30',
             'body' => 'required',
             'category_ids' => 'required',
@@ -145,45 +128,12 @@ class PostController extends Controller
         //バリデーション:エラー
         if ($validator->fails()) {
             return redirect()
-            ->route('post.edit', $id)
+            ->route('post.edit', $post->id)
             ->withInput()
             ->withErrors($validator);
         }
         
-        // 画像のアップロード
-        $now_path = $post->main_image;
-        if($request->hasFile('main_image')){
-            // 画像のリサイズ
-            $file = $request->file('main_image');
-            $path = $file->hashName('public');
-            $image = \Image::make($file);
-            $image->orientate();
-            $image->resize(1280, null,
-                function ($constraint) {
-                    // 縦横比を保持
-                    $constraint->aspectRatio();
-                    // 小さい画像は大きくしない
-                    $constraint->upsize();
-                }
-            );
-            \Storage::put($path, (string) $image->encode());
-            \Storage::disk('public')->delete($now_path);
-            
-            $path = explode('/', $path);
-            $path = $path[1];
-        } else {
-            $path = $now_path;
-        }
-        
-        //dd($path);
-        
-        //データ更新処理
-        $post->update([
-            'title' => $request->title,
-            'body' => $request->body,
-            'main_image' => $path,
-        ]);
-        
+        $result = $post->update($request->all());
         $post->categories()->sync($request->get('category_ids', []));
         return redirect()->route('post.index');
     }
@@ -194,18 +144,20 @@ class PostController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function destroy($id)
+    public function destroy(User $user, Post $post)
     {
-        $result = Post::find($id)->delete();
+        $result = $post->delete();
         return redirect()->route('post.index');
     }
     
     public function mydata()
     {
         // Userモデルに定義した関数を実行する．
-        $posts = User::find(Auth::user()->id)->myposts;
+        $user = User::find(Auth::user()->id);
+        $posts = $user->myposts;
         return view('post.mypage', [
-            'posts' => $posts
+            'posts' => $posts,
+            'user' => $user,
         ]);
     }
     
@@ -239,5 +191,10 @@ class PostController extends Controller
             'categories' => $categories,
             'search' => $search,
         ]);
+    }
+    
+    public function __construct()
+    {
+        $this->authorizeResource(Post::class, 'post');
     }
 }

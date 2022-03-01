@@ -5,6 +5,7 @@ use App\Http\Controllers\PostController;
 use App\Http\Controllers\FavoriteController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\CommentController;
+use App\Http\Controllers\ProfileController;
 
 /*
 |--------------------------------------------------------------------------
@@ -18,6 +19,11 @@ use App\Http\Controllers\CommentController;
 */
 
 Route::group(['middleware' => 'auth'], function () {
+    Route::get('/profile/{user}', [ProfileController::class, 'show'])->name('profile.show');
+    Route::get('/profile/{user}/edit', [ProfileController::class, 'edit'])->name('profile.edit');
+    Route::post('/profile/upload', [ProfileController::class, 'upload'])->name('profile.upload');
+    Route::post('/profile/{user}/update', [ProfileController::class, 'update'])->name('profile.update');
+    
     Route::get('/post/category/{category}', [CategoryController::class, 'index'])->name('categories');
     Route::get('/post/ranking', [PostController::class, 'ranking'])->name('post.ranking');
     Route::get('/post/search', [PostController::class, 'search'])->name('post.search');
@@ -27,6 +33,8 @@ Route::group(['middleware' => 'auth'], function () {
     Route::post('post/{post}/comments', [CommentController::class, 'store'])->name('comments');
   
     Route::get('/post/mypage', [PostController::class, 'mydata'])->name('post.mypage');
+    
+    Route::post('/post/upload', [PostController::class, 'upload'])->name('post.upload');
     Route::resource('post', PostController::class);
 });
 

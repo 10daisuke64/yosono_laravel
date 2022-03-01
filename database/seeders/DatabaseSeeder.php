@@ -45,7 +45,7 @@ class DatabaseSeeder extends Seeder
             [
                 'id' => '1',
                 'user_id' => '1',
-                'main_image' => 'kVjRBquCxJJqKtlpoAeqWQtWGgny2ftk00GzuaZ8.jpg',
+                'main_image' => '4fLWW7HR1YRjfcNmldTU4YzhuSfW4rNQy1GyFF6x.jpg',
                 'title' => 'hoge',
                 'body' => 'hogehoge',
                 'created_at' => date('Y-m-d H:i:s'),

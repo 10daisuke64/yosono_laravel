@@ -6,6 +6,43 @@
       {{ __('My Page') }}
     </h2>
   </x-slot>
+  
+  <div class="py-12 pb-1">
+    <div class="max-w-7xl mx-auto sm:w-8/12 md:w-1/2 lg:w-5/12">
+      <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
+        <div class="p-6 bg-white border-b border-gray-200">
+          <table class="text-center w-full border-collapse">
+            <thead>
+              <tr>
+                <th class="py-4 px-6 bg-grey-lightest font-bold uppercase text-lg text-grey-dark border-b border-grey-light">Profile</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr class="hover:bg-grey-lighter">
+                <td class="py-4 px-6 border-b border-grey-light">
+                  <div class="flex items-center flex-col">
+                    <img src="{{ \Storage::url('profiles/'.$user->profile_image) }}" width="100" height="100">
+                    <h3 class="mt-4 font-bold text-lg text-grey-dark">{{$user->name}}</h3>
+                    <p class="mt-4">{{ $user->profile_name }}</p>
+                    <p class="mt-4">{{ $user->profile_text }}</p>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+          <!-- 更新ボタン -->
+          <form action="{{ route('profile.edit',$user->id) }}" method="GET" class="text-left">
+            @csrf
+            <button type="submit" class="mr-2 ml-2 text-sm hover:bg-gray-200 hover:shadow-none text-white py-1 px-2 focus:outline-none focus:shadow-outline">
+              <svg class="h-6 w-6 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="black">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+              </svg>
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <div class="py-12">
     <div class="max-w-7xl mx-auto sm:w-8/12 md:w-1/2 lg:w-5/12">
@@ -22,13 +59,13 @@
                 @foreach ($posts as $post)
                 <tr class="hover:bg-grey-lighter">
                   <td class="py-4 px-6 border-b border-grey-light">
+                    <a href="{{ route('profile.show',$post->user->id) }}">{{$post->user->name}}</a>
                     <a href="{{ route('post.show',$post->id) }}">
                       <ul class="flex">
                       @foreach ($post->categories as $category)
                         <li class="mr-2 ml-2 text-sm">{{$category->name}}</li>
                       @endforeach
                       </ul>
-                      <p class="text-left text-grey-dark">{{$post->user->name}}</p>
                       @if ($post->main_image !== null)
                         <img src="{{ \Storage::url($post->main_image) }}" class='w-100 mb-3'>
                       @else
